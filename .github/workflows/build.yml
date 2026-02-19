@@ -1,20 +1,50 @@
-    - name: Build
-      run: |
-        export DEVKITPRO=/opt/devkitpro
-        export DEVKITARM=$DEVKITPRO/devkitARM
-        make
+name: Build Big Bang 3D
 
-    - name: Create ZIP
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install devkitPro
       run: |
-        mkdir release
-        cp *.cia release/ || true
-        cp *.3dsx release/ || true
+        sudo apt update
+        sudo apt install -y wget zip
+        wget https://apt.devkitpro.org/install-devkitpro-pacman
+        chmod +x install-devkitpro-pacman
+        sudo ./install-devkitpro-pacman
+        sudo dkp-pacman -S --noconfirm 3ds-dev
+
+    - name: Set environment
+      run: |
+        echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
+        echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
+
+    - name: Build project
+      run: make
+
+    - name: Create Release Folder
+      run: |
+        mkdir -p release
+        cp *.cia release/ 2>/dev/null || true
+        cp *.3dsx release/ 2>/dev/null || true
+
+    - name: Zip Files
+      run: |
         cd release
         zip -r BigBang3D.zip *
 
-    - name: Upload ZIP
+    - name: Upload ZIP Artifact
       uses: actions/upload-artifact@v4
       with:
         name: BigBang3D-Release
         path: release/BigBang3D.zip
+        
         
