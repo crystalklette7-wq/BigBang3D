@@ -5,6 +5,5 @@ BUILD := build
 SOURCES := source
 
 LIBS := -lctru -lcitro2d -lcitro3d -lm
-name: Build Big Bang 3D
         
         
