@@ -1,9 +1,57 @@
-include $(DEVKITPRO)/libctru/base_rules
+BigBang3D/
+├── source/
+│   └── main.c
+├── gfx/
+│   ├── icon.png        (48x48 PNG)
+│   └── banner.png      (256x128 PNG)
+├── audio/
+│   └── banner.wav      (16-bit PCM WAV)
+├── Makefile
+└── .github/workflows/build.yml
+name: Build Big Bang 3D CIA
 
-TARGET := BigBang3D
-BUILD := build
-SOURCES := source
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
 
-LIBS := -lctru -lcitro2d -lcitro3d -lm
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install devkitPro
+      run: |
+        sudo apt update
+        sudo apt install -y wget zip
+        wget https://apt.devkitpro.org/install-devkitpro-pacman
+        chmod +x install-devkitpro-pacman
+        sudo ./install-devkitpro-pacman
+        sudo dkp-pacman -S --noconfirm 3ds-dev
+
+    - name: Set environment
+      run: |
+        echo "DEVKITPRO=/opt/devkitpro" >> $GITHUB_ENV
+        echo "DEVKITARM=/opt/devkitpro/devkitARM" >> $GITHUB_ENV
+
+    - name: Build
+      run: make
+
+    - name: Prepare Release
+      run: |
+        mkdir release
+        cp *.cia release/
+        cp *.3dsx release/
+        cd release
+        zip -r BigBang3D.zip *
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BigBang3D-Release
+        path: release/BigBang3D.zip
         
         
