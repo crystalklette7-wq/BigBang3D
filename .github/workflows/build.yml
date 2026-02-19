@@ -1,0 +1,20 @@
+    - name: Build
+      run: |
+        export DEVKITPRO=/opt/devkitpro
+        export DEVKITARM=$DEVKITPRO/devkitARM
+        make
+
+    - name: Create ZIP
+      run: |
+        mkdir release
+        cp *.cia release/ || true
+        cp *.3dsx release/ || true
+        cd release
+        zip -r BigBang3D.zip *
+
+    - name: Upload ZIP
+      uses: actions/upload-artifact@v4
+      with:
+        name: BigBang3D-Release
+        path: release/BigBang3D.zip
+        
